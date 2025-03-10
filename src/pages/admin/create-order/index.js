@@ -98,6 +98,10 @@ const CreateOrder = () => {
     ],
   };
 
+  const cookies = data.products.filter(product => product.CategoryID === 1);
+  const bars = data.products.filter(product => product.CategoryID === 2);
+  const bread = data.products.filter(product => product.CategoryID === 3);
+
   const addToCart = (product) => {
     setCartItems((prevItems) => {
       const existingItem = prevItems.find(
@@ -148,7 +152,7 @@ const CreateOrder = () => {
               <h2>Cookies</h2>
 
               <div className="flex flex-wrap grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {data.products.map((item) => (
+                {cookies.map((item) => (
                   <div
                     key={item.ProductID}
                     className="cursor-pointer flex flex-col items-center  max-w-[8rem] w-32 h-32 p-3 border bg-arcLight hover:scale-105 transition-all duration-200 text-darkerGray shadow-lg rounded-lg justify-center gap-1"
@@ -169,7 +173,7 @@ const CreateOrder = () => {
             <div className="w-full">
               <h2>Bars</h2>
               <div className="flex flex-wrap grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {data.products.map((item) => (
+                {bars.map((item) => (
                   <div
                     key={item.ProductID}
                     className="cursor-pointer flex flex-col items-center  max-w-[8rem] w-32 h-32 p-3 border bg-arcLight hover:scale-105 transition-all duration-200 text-darkerGray shadow-lg rounded-lg justify-center gap-1"
@@ -190,7 +194,7 @@ const CreateOrder = () => {
             <div className="w-full">
               <h2>Bread</h2>
               <div className="flex flex-wrap grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {data.products.map((item) => (
+                {bread.map((item) => (
                   <div
                     key={item.ProductID}
                     className="cursor-pointer flex flex-col items-center  max-w-[8rem] w-32 h-32 p-3 border bg-arcLight hover:scale-105 transition-all duration-200 text-darkerGray shadow-lg rounded-lg justify-center gap-1"
