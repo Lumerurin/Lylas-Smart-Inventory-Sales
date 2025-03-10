@@ -32,6 +32,8 @@ const EventInventoryPage = () => {
     stockoutDetails: [{ StockID: '', Quantity: '', Remarks: '' }]
   });
   const [showAddStockOut, setShowAddStockOut] = useState(false);
+  const [employees, setEmployees] = useState([]);
+  const [availableStockIn, setAvailableStockIn] = useState([]);
   const navigate = useNavigate();
 
   const fetchData = () => {
@@ -73,8 +75,21 @@ const EventInventoryPage = () => {
       });
   };
   
+  const fetchDropdownData = () => {
+    fetch('http://localhost:5000/api/employees')
+      .then(response => response.json())
+      .then(data => setEmployees(data))
+      .catch(error => console.error('Error fetching employees:', error));
+  
+    fetch('http://localhost:5000/api/available-stockin')
+      .then(response => response.json())
+      .then(data => setAvailableStockIn(data))
+      .catch(error => console.error('Error fetching available stock-in items:', error));
+  };
+  
   useEffect(() => {
     fetchData();
+    fetchDropdownData();
   }, []);
 
   const handleDeleteStockIn = (item) => {
@@ -394,6 +409,13 @@ const EventInventoryPage = () => {
                       <span>{item.EmployeeUsername}</span> {/* Display Employee Username */}
                       <span>{item.Remarks}</span> {/* Display Remarks */}
                       <span>₱{parseFloat(item.SubTotal).toFixed(2)}</span> {/* Display SubTotal */}
+                      <span>
+                        <Trash
+                          size={24}
+                          className="text-red-500 cursor-pointer"
+                          onClick={() => handleDeleteStockOut(item)}
+                        />
+                      </span>
                     </div>
                   </div>
                 ))
@@ -587,19 +609,24 @@ const EventInventoryPage = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Employee ID</label>
-                <input
-                  type="number"
+                <label className="block text-sm font-medium text-gray-700">Employee</label>
+                <select
                   value={newStockOut.EmployeeID}
                   onChange={(e) => setNewStockOut({ ...newStockOut, EmployeeID: e.target.value })}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
+                >
+                  <option value="">Select Employee</option>
+                  {employees.map(employee => (
+                    <option key={employee.EmployeeID} value={employee.EmployeeID}>
+                      {employee.EmployeeUsername}
+                    </option>
+                  ))}
+                </select>
               </div>
               {newStockOut.stockoutDetails.map((detail, index) => (
                 <div key={index} className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700">Stock ID</label>
-                  <input
-                    type="number"
+                  <label className="block text-sm font-medium text-gray-700">Stock Item</label>
+                  <select
                     value={detail.StockID}
                     onChange={(e) => {
                       const updatedDetails = [...newStockOut.stockoutDetails];
@@ -607,7 +634,14 @@ const EventInventoryPage = () => {
                       setNewStockOut({ ...newStockOut, stockoutDetails: updatedDetails });
                     }}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
+                  >
+                    <option value="">Select Stock Item</option>
+                    {availableStockIn.map(stock => (
+                      <option key={stock.StockID} value={stock.StockID}>
+                        {stock.ProductName} (Available: {stock.Quantity})
+                      </option>
+                    ))}
+                  </select>
                   <label className="block text-sm font-medium text-gray-700">Quantity</label>
                   <input
                     type="number"

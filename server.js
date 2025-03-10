@@ -740,6 +740,35 @@ app.get('/api/transactions/:id/receipt', async (req, res) => {
   }
 });
 
+// Define a route to get all employees
+app.get('/api/employees', async (req, res) => {
+  const query = 'SELECT EmployeeID, EmployeeUsername FROM employee';
+  try {
+    const results = await executeQuery(query);
+    res.status(200).json(results);
+  } catch (err) {
+    console.error('Error fetching employees:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+// Define a route to get available stock-in items
+app.get('/api/available-stockin', async (req, res) => {
+  const query = `
+    SELECT s.StockID, p.ProductName, s.Quantity
+    FROM stockin s
+    JOIN products p ON s.ProductID = p.ProductID
+    WHERE s.Quantity > 0
+  `;
+  try {
+    const results = await executeQuery(query);
+    res.status(200).json(results);
+  } catch (err) {
+    console.error('Error fetching available stock-in items:', err);
+    res.status(500).send('Server error');
+  }
+});
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
