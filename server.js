@@ -217,30 +217,22 @@ app.get('/api/eventdetails', async(req, res) => {
   }
 });
 
-// Define a route to get stock-out items
+
+// Define a route to get stock-out items with employee details
 app.get('/api/stockout', async (req, res) => {
   const query = `
-    SELECT p.ProductName, 
-           sod.Quantity AS NumberOfStocks, 
-           si.Quantity AS AvailableStocks, 
-           si.ExpiryDate, 
-           sod.Price
-    FROM stockoutdetails sod
+    SELECT so.StockOutID, so.Date, e.EmployeeUsername, sod.Quantity, sod.Price, sod.Remarks, sod.SubTotal, p.ProductName
+    FROM stockout so
+    JOIN stockoutdetails sod ON so.StockOutID = sod.StockOutID
+    JOIN employee e ON so.EmployeeID = e.EmployeeID
     JOIN stockin si ON sod.StockID = si.StockID
     JOIN products p ON si.ProductID = p.ProductID
   `;
   try {
     const results = await executeQuery(query);
-    const formattedResults = results.map(row => ({
-      ProductName: row.ProductName,
-      NumberOfStocks: row.NumberOfStocks,
-      AvailableStocks: row.AvailableStocks,
-      ExpiryDate: row.ExpiryDate,
-      Price: parseFloat(row.Price) || 0
-    }));
-    res.status(200).json(formattedResults);
+    res.status(200).json(results);
   } catch (err) {
-    console.error('Error fetching stockout data:', err);
+    console.error('Error fetching stock-out items:', err);
     res.status(500).json({ error: 'Database error', details: err.message });
   }
 });
