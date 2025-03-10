@@ -274,9 +274,6 @@ const EventInventoryPage = () => {
                   Expiry Date
                 </span>
                 <span className="font-semibold text-lg text-darkerGray">
-                  Price
-                </span>
-                <span className="font-semibold text-lg text-darkerGray">
                   Employee
                 </span>
                 <span className="font-semibold text-lg text-darkerGray">
@@ -340,7 +337,6 @@ const EventInventoryPage = () => {
                       <span>{item.ProductName}</span>
                       <span>{item.Quantity}</span>
                       <span>{new Date(item.Date).toLocaleDateString()}</span> {/* Format Date */}
-                      <span>₱{parseFloat(item.Price).toFixed(2)}</span> {/* Ensure Price is a number */}
                       <span>{item.EmployeeUsername}</span> {/* Display Employee Username */}
                       <span>{item.Remarks}</span> {/* Display Remarks */}
                       <span>₱{parseFloat(item.SubTotal).toFixed(2)}</span> {/* Display SubTotal */}

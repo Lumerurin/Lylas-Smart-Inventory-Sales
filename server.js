@@ -221,7 +221,7 @@ app.get('/api/eventdetails', async(req, res) => {
 // Define a route to get stock-out items with employee details
 app.get('/api/stockout', async (req, res) => {
   const query = `
-    SELECT so.StockOutID, so.Date, e.EmployeeUsername, sod.Quantity, sod.Price, sod.Remarks, sod.SubTotal, p.ProductName
+    SELECT so.StockOutID, so.Date, e.EmployeeUsername, sod.Quantity, sod.Remarks, sod.SubTotal, p.ProductName
     FROM stockout so
     JOIN stockoutdetails sod ON so.StockOutID = sod.StockOutID
     JOIN employee e ON so.EmployeeID = e.EmployeeID
