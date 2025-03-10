@@ -254,7 +254,7 @@ app.post('/api/transactions', async (req, res) => {
     }
 
     const query = `
-      INSERT INTO transaction (CustomerID, EmployeeID, ScheduleID, TotalCost, TransactionDate, CashPayment)
+      INSERT INTO transactions (CustomerID, EmployeeID, ScheduleID, TotalCost, TransactionDate, CashPayment)
       VALUES (?, ?, ?, ?, ?, ?)
     `;
     const result = await executeQuery(query, [CustomerID, EmployeeID, ScheduleID, TotalCost, TransactionDate, CashPayment]);
@@ -348,6 +348,367 @@ app.post('/api/stockin', async (req, res) => {
   } catch (err) {
     console.error('Error adding stock-in item:', err);
     res.status(500).send('Server error');
+  }
+});
+
+// KANI AKONG GI DAGDAG MEL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// Get transaction by ID
+app.get('/api/transactions/:id', async (req, res) => {
+  const { id } = req.params;
+  const query = `
+    SELECT t.TransactionID, t.CustomerID, t.EmployeeID, 
+           t.ScheduleID, t.TotalCost, t.TransactionDate, 
+           t.CashPayment, e.EmployeeUsername
+    FROM transactions t
+    JOIN employee e ON t.EmployeeID = e.EmployeeID
+    WHERE t.TransactionID = ?
+  `;
+  try {
+    const results = await executeQuery(query, [id]);
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Transaction not found' });
+    }
+    res.status(200).json(results[0]);
+  } catch (err) {
+    console.error('Error fetching transaction:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
+// Get order details for a transaction
+app.get('/api/transactions/:id/orderdetails', async (req, res) => {
+  const { id } = req.params;
+  const query = `
+    SELECT od.OrderDetailsID, od.TransactionID, od.StockID, 
+           od.Subtotal, od.DiscountedPrice, od.Quantity,
+           p.ProductName, si.Price
+    FROM orderdetails od
+    JOIN stockin si ON od.StockID = si.StockID
+    JOIN products p ON si.ProductID = p.ProductID
+    WHERE od.TransactionID = ?
+  `;
+  try {
+    const results = await executeQuery(query, [id]);
+    res.status(200).json(results);
+  } catch (err) {
+    console.error('Error fetching order details:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
+// Create a new checkout transaction
+app.post('/api/checkout', async (req, res) => {
+  const { 
+    employeeID, 
+    items, // Array of {stockID, quantity, price, subtotal}
+    totalAmount,
+    discount = 0,
+    paymentMethod = 'Cash',
+    cashReceived
+  } = req.body;
+
+  // Validate required fields
+  if (!employeeID || !items || !totalAmount || !cashReceived) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  try {
+    // Start a transaction to ensure data integrity
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      // 1. Create transaction record
+      const transactionDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      const createTransactionQuery = `
+        INSERT INTO transaction (EmployeeID, TotalCost, TransactionDate, CashPayment)
+        VALUES (?, ?, ?, ?)
+      `;
+      const transactionResult = await connection.execute(
+        createTransactionQuery, 
+        [employeeID, totalAmount, transactionDate, cashReceived]
+      );
+      
+      const transactionID = transactionResult[0].insertId;
+      
+      // 2. Create order details for each item
+      for (const item of items) {
+        const { stockID, quantity, price, subtotal } = item;
+        const discountedPrice = price - (price * (discount / 100));
+        
+        // Create order detail record
+        const createOrderDetailQuery = `
+          INSERT INTO orderdetails (TransactionID, StockID, Subtotal, DiscountedPrice, Quantity)
+          VALUES (?, ?, ?, ?, ?)
+        `;
+        await connection.execute(
+          createOrderDetailQuery, 
+          [transactionID, stockID, subtotal, discountedPrice, quantity]
+        );
+        
+        // Update inventory quantity
+        const updateStockQuery = `
+          UPDATE stockin 
+          SET Quantity = Quantity - ? 
+          WHERE StockID = ? AND Quantity >= ?
+        `;
+        const updateResult = await connection.execute(
+          updateStockQuery, 
+          [quantity, stockID, quantity]
+        );
+        
+        // Check if update was successful (affected rows should be 1)
+        if (updateResult[0].affectedRows !== 1) {
+          // Item might be out of stock
+          throw new Error(`Insufficient quantity for stock ID ${stockID}`);
+        }
+      }
+      
+      // 3. Record payment method if not cash
+      if (paymentMethod !== 'Cash') {
+        const paymentMethodID = paymentMethod === 'Card' ? 1 : 2; // Assuming: 1=Card, 2=Other
+        const referenceNumber = `REF-${Date.now()}`;
+        
+        const recordPaymentQuery = `
+          INSERT INTO paymentmethod (TransactionID, PaymentMethodID, ReferenceNumber)
+          VALUES (?, ?, ?)
+        `;
+        await connection.execute(
+          recordPaymentQuery, 
+          [transactionID, paymentMethodID, referenceNumber]
+        );
+      }
+      
+      // Commit the transaction
+      await connection.commit();
+      
+      // Calculate change
+      const change = cashReceived - totalAmount;
+      
+      res.status(201).json({ 
+        success: true, 
+        message: 'Checkout completed successfully',
+        transactionID,
+        totalAmount,
+        cashReceived,
+        change,
+        date: transactionDate
+      });
+      
+    } catch (error) {
+      // If there's an error, roll back the transaction
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error('Error processing checkout:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Error processing checkout', 
+      details: error.message 
+    });
+  }
+});
+
+// Cancel a transaction
+app.delete('/api/transactions/:id', async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    // Start a transaction to ensure data integrity
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+    
+    try {
+      // 1. Get all order details to restore inventory
+      const getOrderDetailsQuery = `
+        SELECT StockID, Quantity FROM orderdetails WHERE TransactionID = ?
+      `;
+      const [orderDetails] = await connection.execute(getOrderDetailsQuery, [id]);
+      
+      // 2. Restore inventory quantities
+      for (const item of orderDetails) {
+        const restoreStockQuery = `
+          UPDATE stockin SET Quantity = Quantity + ? WHERE StockID = ?
+        `;
+        await connection.execute(restoreStockQuery, [item.Quantity, item.StockID]);
+      }
+      
+      // 3. Delete payment method records if any
+      const deletePaymentQuery = `DELETE FROM paymentmethod WHERE TransactionID = ?`;
+      await connection.execute(deletePaymentQuery, [id]);
+      
+      // 4. Delete order details
+      const deleteOrderDetailsQuery = `DELETE FROM orderdetails WHERE TransactionID = ?`;
+      await connection.execute(deleteOrderDetailsQuery, [id]);
+      
+      // 5. Delete transaction record
+      const deleteTransactionQuery = `DELETE FROM transaction WHERE TransactionID = ?`;
+      await connection.execute(deleteTransactionQuery, [id]);
+      
+      // Commit the transaction
+      await connection.commit();
+      
+      res.status(200).json({ 
+        success: true, 
+        message: 'Transaction cancelled successfully' 
+      });
+      
+    } catch (error) {
+      // If there's an error, roll back the transaction
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error('Error cancelling transaction:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Error cancelling transaction', 
+      details: error.message 
+    });
+  }
+});
+
+// Get current transaction ID (for display purposes)
+app.get('/api/transactions/next', async (req, res) => {
+  const query = `
+    SELECT AUTO_INCREMENT 
+    FROM information_schema.TABLES 
+    WHERE TABLE_SCHEMA = "db_lylas" 
+    AND TABLE_NAME = "transactions"
+  `;
+  try {
+    const results = await executeQuery(query);
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'No transaction ID found' });
+    }
+    res.status(200).json({ transactionID: results[0].AUTO_INCREMENT });
+  } catch (err) {
+    console.error('Error fetching next transaction ID:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
+// Get employee information
+app.get('/api/employees/:id', async (req, res) => {
+  const { id } = req.params;
+  const query = `
+    SELECT EmployeeID, EmployeeUsername, EmployeeFullName
+    FROM employee
+    WHERE EmployeeID = ?
+  `;
+  try {
+    const results = await executeQuery(query, [id]);
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Employee not found' });
+    }
+    res.status(200).json(results[0]);
+  } catch (err) {
+    console.error('Error fetching employee:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// Get available stock for checkout
+app.get('/api/available-stock', async (req, res) => {
+  const query = `
+    SELECT s.StockID, p.ProductName, p.ProductID, s.Quantity, 
+           CAST(s.Price AS DECIMAL(10,2)) AS Price, s.ExpiryDate,
+           c.CategoryName
+    FROM stockin s
+    JOIN products p ON s.ProductID = p.ProductID
+    JOIN category c ON p.CategoryID = c.CategoryID
+    WHERE s.Quantity > 0 AND s.ExpiryDate > NOW()
+    ORDER BY p.ProductName ASC
+  `;
+  try {
+    const results = await executeQuery(query);
+    const formattedResults = results.map(item => ({
+      stockID: item.StockID,
+      productID: item.ProductID,
+      productName: item.ProductName,
+      quantity: item.Quantity,
+      price: parseFloat(item.Price),
+      expiryDate: item.ExpiryDate,
+      category: item.CategoryName
+    }));
+    res.status(200).json(formattedResults);
+  } catch (err) {
+    console.error('Error fetching available stock:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// Generate receipt
+app.get('/api/transactions/:id/receipt', async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    // Get transaction details
+    const transactionQuery = `
+      SELECT t.TransactionID, t.CustomerID, t.EmployeeID, 
+             t.TotalCost, t.TransactionDate, t.CashPayment,
+             e.EmployeeUsername
+      FROM transactions t
+      JOIN employee e ON t.EmployeeID = e.EmployeeID
+      WHERE t.TransactionID = ?
+    `;
+    const transactionResults = await executeQuery(transactionQuery, [id]);
+    
+    if (transactionResults.length === 0) {
+      return res.status(404).json({ error: 'Transaction not found' });
+    }
+    
+    const transaction = transactionResults[0];
+    
+    const orderDetailsQuery = `
+      SELECT od.OrderDetailsID, od.Quantity, od.Subtotal, od.DiscountedPrice,
+             p.ProductName, CAST(si.Price AS DECIMAL(10,2)) AS Price
+      FROM orderdetails od
+      JOIN stockin si ON od.StockID = si.StockID
+      JOIN products p ON si.ProductID = p.ProductID
+      JOIN products p ON si.ProductID = p.ProductID
+      WHERE od.TransactionID = ?
+    `;
+    const orderDetails = await executeQuery(orderDetailsQuery, [id]);
+    
+    // Calculate change
+    const change = transaction.CashPayment - transaction.TotalCost;
+    
+    // Format date
+    const date = new Date(transaction.TransactionDate);
+    const formattedDate = date.toLocaleDateString();
+    const formattedTime = date.toLocaleTimeString();
+    
+    // Build receipt data
+    const receipt = {
+      transactionID: transaction.TransactionID,
+      date: formattedDate,
+      time: formattedTime,
+      employeeID: transaction.EmployeeID,
+      employeeName: transaction.EmployeeUsername,
+      items: orderDetails.map(item => ({
+        productName: item.ProductName,
+        price: parseFloat(item.Price),
+        quantity: item.Quantity,
+        subtotal: parseFloat(item.Subtotal)
+      })),
+      totalAmount: parseFloat(transaction.TotalCost),
+      cashReceived: parseFloat(transaction.CashPayment),
+      change: change,
+      paymentMethod: 'Cash' // You can extend this to fetch from paymentmethod table
+    };
+    
+    res.status(200).json(receipt);
+    
+  } catch (err) {
+    console.error('Error generating receipt:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
   }
 });
 
