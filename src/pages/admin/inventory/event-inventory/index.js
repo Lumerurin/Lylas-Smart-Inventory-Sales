@@ -243,24 +243,50 @@ const EventInventoryPage = () => {
           </div>
 
           <div className="w-full  flex items-center justify-between p-5 ">
-            <div className="w-full grid grid-cols-6">
-              <span className="font-semibold text-lg text-darkerGray">
-                Product Name
-              </span>
-              <span className="font-semibold text-lg text-darkerGray">
-                Number of Stocks
-              </span>
-              <span className="font-semibold text-lg text-darkerGray">
-                Expiry Date
-              </span>
-              <span className="font-semibold text-lg text-darkerGray">
-                Price
-              </span>
-              <span className="font-semibold text-lg text-darkerGray">
-              </span>
-              <span className="font-semibold text-lg text-darkerGray">
-              </span>
-            </div>
+            {!stockToggle ? (
+              <div className="w-full grid grid-cols-6">
+                <span className="font-semibold text-lg text-darkerGray">
+                  Product Name
+                </span>
+                <span className="font-semibold text-lg text-darkerGray">
+                  Number of Stocks
+                </span>
+                <span className="font-semibold text-lg text-darkerGray">
+                  Expiry Date
+                </span>
+                <span className="font-semibold text-lg text-darkerGray">
+                  Price
+                </span>
+                <span className="font-semibold text-lg text-darkerGray">
+                </span>
+                <span className="font-semibold text-lg text-darkerGray">
+                </span>
+              </div>
+            ) : (
+              <div className="w-full grid grid-cols-7">
+                <span className="font-semibold text-lg text-darkerGray">
+                  Product Name
+                </span>
+                <span className="font-semibold text-lg text-darkerGray">
+                  Number of Stocks
+                </span>
+                <span className="font-semibold text-lg text-darkerGray">
+                  Expiry Date
+                </span>
+                <span className="font-semibold text-lg text-darkerGray">
+                  Price
+                </span>
+                <span className="font-semibold text-lg text-darkerGray">
+                  Employee
+                </span>
+                <span className="font-semibold text-lg text-darkerGray">
+                  Remarks
+                </span>
+                <span className="font-semibold text-lg text-darkerGray">
+                  SubTotal
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Alternate Bg color starts */}
@@ -310,17 +336,14 @@ const EventInventoryPage = () => {
                       index % 2 === 0 ? "bg-gray-100" : "bg-white"
                     }`}
                   >
-                    <div className="w-full grid grid-cols-5 text-lg text-darkerGray">
+                    <div className="w-full grid grid-cols-7 text-lg text-darkerGray">
                       <span>{item.ProductName}</span>
-                      <span>{item.NumberOfStocks}</span>
-                      <span>{new Date(item.ExpiryDate).toLocaleDateString()}</span> {/* Format ExpiryDate */}
+                      <span>{item.Quantity}</span>
+                      <span>{new Date(item.Date).toLocaleDateString()}</span> {/* Format Date */}
                       <span>₱{parseFloat(item.Price).toFixed(2)}</span> {/* Ensure Price is a number */}
-                      <span>
-                        <PencilSimple
-                          size={24}
-                          className="text-blue-500 cursor-pointer"
-                        />
-                      </span>
+                      <span>{item.EmployeeUsername}</span> {/* Display Employee Username */}
+                      <span>{item.Remarks}</span> {/* Display Remarks */}
+                      <span>₱{parseFloat(item.SubTotal).toFixed(2)}</span> {/* Display SubTotal */}
                     </div>
                   </div>
                 ))
