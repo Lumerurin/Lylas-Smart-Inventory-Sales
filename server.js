@@ -343,6 +343,42 @@ app.post('/api/stockin', async (req, res) => {
   }
 });
 
+// Define a route to add a stock-out item
+app.post('/api/stockout', async (req, res) => {
+  const { Date, EmployeeID, stockoutDetails } = req.body;
+  const stockoutQuery = 'INSERT INTO stockout (Date, EmployeeID) VALUES (?, ?)';
+  try {
+    const stockoutResult = await executeQuery(stockoutQuery, [Date, EmployeeID]);
+    const StockOutID = stockoutResult.insertId;
+
+    for (const detail of stockoutDetails) {
+      const { StockID, Quantity, Remarks } = detail;
+      const stockoutDetailsQuery = 'INSERT INTO stockoutdetails (StockOutID, StockID, Quantity, Remarks) VALUES (?, ?, ?, ?)';
+      await executeQuery(stockoutDetailsQuery, [StockOutID, StockID, Quantity, Remarks]);
+    }
+
+    res.status(201).send('Stock-out item added successfully');
+  } catch (err) {
+    console.error('Error adding stock-out item:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+// Define a route to delete a stock-out item
+app.delete('/api/stockout/:id', async (req, res) => {
+  const { id } = req.params;
+  const deleteStockoutDetailsQuery = 'DELETE FROM stockoutdetails WHERE StockOutID = ?';
+  const deleteStockoutQuery = 'DELETE FROM stockout WHERE StockOutID = ?';
+  try {
+    await executeQuery(deleteStockoutDetailsQuery, [id]);
+    await executeQuery(deleteStockoutQuery, [id]);
+    res.status(200).send('Stock-out item deleted successfully');
+  } catch (err) {
+    console.error('Error deleting stock-out item:', err);
+    res.status(500).send('Server error');
+  }
+});
+
 // KANI AKONG GI DAGDAG MEL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 // Get transaction by ID

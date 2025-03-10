@@ -25,6 +25,13 @@ const EventInventoryPage = () => {
     ExpiryDate: ''
   });
   const [showAddStockIn, setShowAddStockIn] = useState(false);
+  const [deleteStockOut, setDeleteStockOut] = useState(null); // New state for deleting stock-out
+  const [newStockOut, setNewStockOut] = useState({
+    Date: '',
+    EmployeeID: '',
+    stockoutDetails: [{ StockID: '', Quantity: '', Remarks: '' }]
+  });
+  const [showAddStockOut, setShowAddStockOut] = useState(false);
   const navigate = useNavigate();
 
   const fetchData = () => {
@@ -145,6 +152,53 @@ const EventInventoryPage = () => {
         setShowAddStockIn(false); // Close the popup after adding
       })
       .catch(error => console.error('Error adding stock-in item:', error));
+  };
+
+  const handleDeleteStockOut = (item) => {
+    setDeleteStockOut(item);
+  };
+
+  const confirmDeleteStockOut = () => {
+    const apiUrl = `http://localhost:5000/api/stockout/${deleteStockOut.StockOutID}`;
+    fetch(apiUrl, {
+      method: 'DELETE',
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.text(); // Change to response.text() to handle non-JSON response
+      })
+      .then(data => {
+        console.log('Stock-out item deleted:', data);
+        fetchData(); // Refresh data after deletion
+        setDeleteStockOut(null);
+      })
+      .catch(error => console.error('Error deleting stock-out item:', error));
+  };
+
+  const handleAddStockOut = () => {
+    const apiUrl = 'http://localhost:5000/api/stockout';
+    fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newStockOut),
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.text(); // Change to response.text() to handle non-JSON response
+      })
+      .then(data => {
+        console.log('Stock-out item added:', data);
+        fetchData(); // Refresh data after addition
+        setNewStockOut({ Date: '', EmployeeID: '', stockoutDetails: [{ StockID: '', Quantity: '', Remarks: '' }] });
+        setShowAddStockOut(false); // Close the popup after adding
+      })
+      .catch(error => console.error('Error adding stock-out item:', error));
   };
 
   const filteredStocks = stockInData.filter(
@@ -357,6 +411,12 @@ const EventInventoryPage = () => {
             >
               Add Stock In
             </button>
+            <button
+              onClick={() => setShowAddStockOut(true)}
+              className="bg-blue-500 text-white px-4 py-2 rounded-md"
+            >
+              Add Stock Out
+            </button>
           </div>
         </div>
 
@@ -432,6 +492,29 @@ const EventInventoryPage = () => {
           </div>
         )}
 
+        {deleteStockOut && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-5 rounded-lg">
+              <h2 className="text-lg font-semibold mb-4">Confirm Delete</h2>
+              <p>Are you sure you want to delete this stock-out item?</p>
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => setDeleteStockOut(null)}
+                  className="bg-gray-500 text-white px-4 py-2 rounded-md mr-2"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDeleteStockOut}
+                  className="bg-red-500 text-white px-4 py-2 rounded-md"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {showAddStockIn && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <div className="bg-white p-5 rounded-lg">
@@ -481,6 +564,83 @@ const EventInventoryPage = () => {
                 </button>
                 <button
                   onClick={handleAddStockIn}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showAddStockOut && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-5 rounded-lg">
+              <h2 className="text-lg font-semibold mb-4">Add Stock Out</h2>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Date</label>
+                <input
+                  type="date"
+                  value={newStockOut.Date}
+                  onChange={(e) => setNewStockOut({ ...newStockOut, Date: e.target.value })}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Employee ID</label>
+                <input
+                  type="number"
+                  value={newStockOut.EmployeeID}
+                  onChange={(e) => setNewStockOut({ ...newStockOut, EmployeeID: e.target.value })}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+              {newStockOut.stockoutDetails.map((detail, index) => (
+                <div key={index} className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700">Stock ID</label>
+                  <input
+                    type="number"
+                    value={detail.StockID}
+                    onChange={(e) => {
+                      const updatedDetails = [...newStockOut.stockoutDetails];
+                      updatedDetails[index].StockID = e.target.value;
+                      setNewStockOut({ ...newStockOut, stockoutDetails: updatedDetails });
+                    }}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
+                  <label className="block text-sm font-medium text-gray-700">Quantity</label>
+                  <input
+                    type="number"
+                    value={detail.Quantity}
+                    onChange={(e) => {
+                      const updatedDetails = [...newStockOut.stockoutDetails];
+                      updatedDetails[index].Quantity = e.target.value;
+                      setNewStockOut({ ...newStockOut, stockoutDetails: updatedDetails });
+                    }}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
+                  <label className="block text-sm font-medium text-gray-700">Remarks</label>
+                  <input
+                    type="text"
+                    value={detail.Remarks}
+                    onChange={(e) => {
+                      const updatedDetails = [...newStockOut.stockoutDetails];
+                      updatedDetails[index].Remarks = e.target.value;
+                      setNewStockOut({ ...newStockOut, stockoutDetails: updatedDetails });
+                    }}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
+                </div>
+              ))}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowAddStockOut(false)}
+                  className="bg-gray-500 text-white px-4 py-2 rounded-md mr-2"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddStockOut}
                   className="bg-blue-500 text-white px-4 py-2 rounded-md"
                 >
                   Add
