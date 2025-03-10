@@ -1,0 +1,81 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "Poppins", sans-serif;
+}
+
+input {
+  width: 32.375rem;
+  height: 2.938rem;
+  border: 1px #d9d9d9 solid;
+  border-radius: 0.625rem;
+  color: darkgray;
+  text-align: center;
+  font-size: 1.125rem;
+}
+
+select {
+  width: 32.375rem;
+  height: 2.938rem;
+  border: 1px #d9d9d9 solid;
+  border-radius: 0.625rem;
+  background-color: white;
+  text-align: center;
+  font-size: 1.125rem;
+}
+
+button {
+  width: 20.375rem;
+  height: 2.938rem;
+  background-color: #4e76cd;
+  color: white;
+  font-size: 1.125rem;
+  border-radius: 10px;
+  text-align: center;
+}
+
+/* Global Header Styles */
+h1 {
+  font-size: 2.5rem; /* 40px */
+  font-weight: bold;
+  color: #222; /* Darker gray */
+}
+
+h2 {
+  font-size: 2rem; /* 32px */
+  font-weight: bold;
+  color: #333;
+}
+
+h3 {
+  font-size: 1.75rem; /* 28px */
+  font-weight: semi-bold;
+  color: #444;
+}
+
+h4 {
+  font-size: 1.5rem; /* 24px */
+  font-weight: semi-bold;
+  color: #555;
+}
+
+h5 {
+  font-size: 1.25rem; /* 20px */
+  font-weight: medium;
+  color: #666;
+}
+
+h6 {
+  font-size: 1rem; /* 16px */
+  font-weight: medium;
+  color: #777;
+}
+
+label {
+  color: #4c4c4c;
+  font-weight: bold;
+}
