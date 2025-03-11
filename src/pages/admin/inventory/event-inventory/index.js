@@ -638,7 +638,7 @@ const EventInventoryPage = () => {
                     <option value="">Select Stock Item</option>
                     {availableStockIn.map(stock => (
                       <option key={stock.StockID} value={stock.StockID}>
-                        {stock.ProductName} (Available: {stock.Quantity})
+                        {stock.ProductName}
                       </option>
                     ))}
                   </select>
