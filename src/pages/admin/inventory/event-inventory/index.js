@@ -21,7 +21,6 @@ const EventInventoryPage = () => {
   const [newStockIn, setNewStockIn] = useState({
     ProductID: '',
     Quantity: '',
-    Price: '',
     ExpiryDate: ''
   });
   const [showAddStockIn, setShowAddStockIn] = useState(false);
@@ -34,6 +33,7 @@ const EventInventoryPage = () => {
   const [showAddStockOut, setShowAddStockOut] = useState(false);
   const [employees, setEmployees] = useState([]);
   const [availableStockIn, setAvailableStockIn] = useState([]);
+  const [products, setProducts] = useState([]); // New state for products
   const navigate = useNavigate();
 
   const fetchData = () => {
@@ -85,6 +85,11 @@ const EventInventoryPage = () => {
       .then(response => response.json())
       .then(data => setAvailableStockIn(data))
       .catch(error => console.error('Error fetching available stock-in items:', error));
+
+    fetch('http://localhost:5000/api/products-dropdown')
+      .then(response => response.json())
+      .then(data => setProducts(data))
+      .catch(error => console.error('Error fetching products:', error));
   };
   
   useEffect(() => {
@@ -163,7 +168,7 @@ const EventInventoryPage = () => {
       .then(data => {
         console.log('Stock-in item added:', data);
         fetchData(); // Refresh data after addition
-        setNewStockIn({ ProductID: '', Quantity: '', Price: '', ExpiryDate: '' });
+        setNewStockIn({ ProductID: '', Quantity: '', ExpiryDate: '' });
         setShowAddStockIn(false); // Close the popup after adding
       })
       .catch(error => console.error('Error adding stock-in item:', error));
@@ -456,15 +461,6 @@ const EventInventoryPage = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Price</label>
-                <input
-                  type="number"
-                  value={editStockIn.Price}
-                  onChange={(e) => setEditStockIn({ ...editStockIn, Price: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-              </div>
-              <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700">Expiry Date</label>
                 <input
                   type="date"
@@ -542,13 +538,19 @@ const EventInventoryPage = () => {
             <div className="bg-white p-5 rounded-lg">
               <h2 className="text-lg font-semibold mb-4">Add Stock In</h2>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Product ID</label>
-                <input
-                  type="number"
+                <label className="block text-sm font-medium text-gray-700">Product</label>
+                <select
                   value={newStockIn.ProductID}
                   onChange={(e) => setNewStockIn({ ...newStockIn, ProductID: e.target.value })}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
+                >
+                  <option value="">Select Product</option>
+                  {products.map(product => (
+                    <option key={product.ProductID} value={product.ProductID}>
+                      {product.ProductName}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700">Quantity</label>
@@ -556,15 +558,6 @@ const EventInventoryPage = () => {
                   type="number"
                   value={newStockIn.Quantity}
                   onChange={(e) => setNewStockIn({ ...newStockIn, Quantity: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Price</label>
-                <input
-                  type="number"
-                  value={newStockIn.Price}
-                  onChange={(e) => setNewStockIn({ ...newStockIn, Price: e.target.value })}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>

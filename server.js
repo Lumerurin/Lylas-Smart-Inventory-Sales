@@ -307,10 +307,10 @@ app.post('/api/paymentmethod', async (req, res) => {
 // Define a route to update a stock-in item
 app.put('/api/stockin/:id', async (req, res) => {
   const { id } = req.params;
-  const { Quantity, Price, ExpiryDate } = req.body;
-  const query = 'UPDATE stockin SET Quantity = ?, Price = ?, ExpiryDate = ? WHERE StockID = ?';
+  const { Quantity, ExpiryDate } = req.body;
+  const query = 'UPDATE stockin SET Quantity = ?, ExpiryDate = ? WHERE StockID = ?';
   try {
-    await executeQuery(query, [Quantity, Price, ExpiryDate, id]);
+    await executeQuery(query, [Quantity, ExpiryDate, id]);
     res.status(200).send('Stock-in item updated successfully');
   } catch (err) {
     console.error('Error updating stock-in item:', err);
@@ -333,10 +333,10 @@ app.delete('/api/stockin/:id', async (req, res) => {
 
 // Define a route to add a stock-in item
 app.post('/api/stockin', async (req, res) => {
-  const { ProductID, Quantity, Price, ExpiryDate } = req.body;
-  const query = 'INSERT INTO stockin (ProductID, Quantity, Price, ExpiryDate) VALUES (?, ?, ?, ?)';
+  const { ProductID, Quantity, ExpiryDate } = req.body;
+  const query = 'INSERT INTO stockin (ProductID, Quantity, ExpiryDate) VALUES (?, ?, ?)';
   try {
-    await executeQuery(query, [ProductID, Quantity, Price, ExpiryDate]);
+    await executeQuery(query, [ProductID, Quantity, ExpiryDate]);
     res.status(201).send('Stock-in item added successfully');
   } catch (err) {
     console.error('Error adding stock-in item:', err);
@@ -766,6 +766,18 @@ app.get('/api/available-stockin', async (req, res) => {
     res.status(200).json(results);
   } catch (err) {
     console.error('Error fetching available stock-in items:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+// Define a route to get all products for dropdown
+app.get('/api/products-dropdown', async (req, res) => {
+  const query = 'SELECT ProductID, ProductName FROM products';
+  try {
+    const results = await executeQuery(query);
+    res.status(200).json(results);
+  } catch (err) {
+    console.error('Error fetching products for dropdown:', err);
     res.status(500).send('Server error');
   }
 });
