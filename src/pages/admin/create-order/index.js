@@ -4,6 +4,7 @@ import { MagnifyingGlass, X } from "@phosphor-icons/react";
 import Separator from "../../../components/ui/Separator";
 import { Trash } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios"; // Import axios for API calls
 
 export const ItemCard = ({ itemName, img, onClick }) => {
   return (
@@ -25,6 +26,7 @@ const CreateOrder = () => {
   const [cartItems, setCartItems] = useState([]);
   const [paymentMethod, setPaymentMethod] = useState('Cash');
   const [errorMessage, setErrorMessage] = useState('');
+  const [products, setProducts] = useState([]); // State to store products
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,77 +34,27 @@ const CreateOrder = () => {
     if (storedUsername) {
       setUsername(storedUsername);
     }
+
+    // Fetch products from the server
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/products");
+        const formattedProducts = response.data.map(product => ({
+          ...product,
+          Price: parseFloat(product.Price) // Ensure Price is a number
+        }));
+        setProducts(formattedProducts);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+
+    fetchProducts();
   }, []);
 
-  const data = {
-    products: [
-      {
-        ProductID: 1,
-        ProductName: "Biscoff Cheesecake",
-        CategoryID: 1,
-        Price: 150,
-      },
-      { ProductID: 2, ProductName: "Funfetti", CategoryID: 1, Price: 210 },
-      {
-        ProductID: 3,
-        ProductName: "Matcha with Cream Cheese",
-        CategoryID: 1,
-        Price: 180,
-      },
-      { ProductID: 4, ProductName: "Nutella Blast", CategoryID: 1, Price: 220 },
-      {
-        ProductID: 5,
-        ProductName: "Oreo Cheesecake",
-        CategoryID: 1,
-        Price: 240,
-      },
-      { ProductID: 6, ProductName: "Rocky Road", CategoryID: 1, Price: 200 },
-      { ProductID: 7, ProductName: "Smores 2.0", CategoryID: 1, Price: 250 },
-      {
-        ProductID: 8,
-        ProductName: "Special Crinkles",
-        CategoryID: 1,
-        Price: 100,
-      },
-      { ProductID: 9, ProductName: "Brownies", CategoryID: 2, Price: 150 },
-      { ProductID: 10, ProductName: "Butterscotch", CategoryID: 2, Price: 170 },
-      { ProductID: 11, ProductName: "Revel Bars", CategoryID: 2, Price: 190 },
-      {
-        ProductID: 12,
-        ProductName: "Red Velvet Cheesecake",
-        CategoryID: 2,
-        Price: 230,
-      },
-      {
-        ProductID: 13,
-        ProductName: "Ham and Cheese Empanada",
-        CategoryID: 3,
-        Price: 120,
-      },
-      {
-        ProductID: 14,
-        ProductName: "Small - Korean Cream Cheese Garlic Bread",
-        CategoryID: 3,
-        Price: 140,
-      },
-      {
-        ProductID: 15,
-        ProductName: "Medium - Korean Cream Cheese Garlic Bread",
-        CategoryID: 3,
-        Price: 160,
-      },
-      {
-        ProductID: 16,
-        ProductName: "Large - Korean Cream Cheese Garlic Bread",
-        CategoryID: 3,
-        Price: 180,
-      },
-    ],
-  };
-
-  const cookies = data.products.filter(product => product.CategoryID === 1);
-  const bars = data.products.filter(product => product.CategoryID === 2);
-  const bread = data.products.filter(product => product.CategoryID === 3);
+  const cookies = products.filter(product => product.CategoryID === 1);
+  const bars = products.filter(product => product.CategoryID === 2);
+  const bread = products.filter(product => product.CategoryID === 3);
 
   const addToCart = (product) => {
     setCartItems((prevItems) => {
