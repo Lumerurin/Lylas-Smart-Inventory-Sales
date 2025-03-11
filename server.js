@@ -238,23 +238,60 @@ app.get('/api/stockout', async (req, res) => {
   }
 });
 
-// Define a route to create a transaction
+// Define a route to create a transaction and order details
 app.post('/api/transactions', async (req, res) => {
+  const connection = await pool.getConnection();
   try {
-    const { CustomerID, EmployeeID, ScheduleID, TotalCost, TransactionDate, CashPayment } = req.body;
-    if (!CustomerID || !EmployeeID || !ScheduleID || !TotalCost || !TransactionDate || !CashPayment) {
+    const { EmployeeID, ScheduleID, TotalCost, DiscountedPrice, TransactionDate, CashPayment, items } = req.body;
+    
+    // Log the received data
+    console.log('Received transaction data:', req.body);
+    
+    if (!EmployeeID || !ScheduleID || !TotalCost || !DiscountedPrice || !TransactionDate || !CashPayment || !items || items.length === 0) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const query = `
-      INSERT INTO transactions (CustomerID, EmployeeID, ScheduleID, TotalCost, TransactionDate, CashPayment)
+    await connection.beginTransaction();
+
+    // Insert transaction
+    const transactionQuery = `
+      INSERT INTO transactions (EmployeeID, ScheduleID, TotalCost, DiscountedPrice, TransactionDate, CashPayment)
       VALUES (?, ?, ?, ?, ?, ?)
     `;
-    const result = await executeQuery(query, [CustomerID, EmployeeID, ScheduleID, TotalCost, TransactionDate, CashPayment]);
-    res.status(201).json({ message: 'Transaction created successfully', TransactionID: result.insertId });
+    const [transactionResult] = await connection.execute(transactionQuery, [EmployeeID, ScheduleID, TotalCost, DiscountedPrice, TransactionDate, CashPayment]);
+    const transactionID = transactionResult.insertId;
+
+    // Insert order details
+    const orderDetailQuery = `
+      INSERT INTO orderdetails (TransactionID, StockID, Subtotal, Quantity)
+      VALUES (?, ?, ?, ?)
+    `;
+    for (const item of items) {
+      const { ProductID, quantity, Price } = item;
+
+      // Fetch the StockID for the product
+      const [stockResult] = await connection.execute('SELECT StockID FROM stockin WHERE ProductID = ? LIMIT 1', [ProductID]);
+      if (stockResult.length === 0) {
+        throw new Error(`Stock not found for ProductID ${ProductID}`);
+      }
+      const stockID = stockResult[0].StockID;
+
+      const orderDetailData = [transactionID, stockID, quantity * Price, quantity];
+      await connection.execute(orderDetailQuery, orderDetailData);
+
+      // Update stock quantity
+      const updateStockQuery = `UPDATE stockin SET Quantity = Quantity - ? WHERE StockID = ?`;
+      await connection.execute(updateStockQuery, [quantity, stockID]);
+    }
+
+    await connection.commit();
+    res.status(201).json({ message: 'Transaction created successfully', TransactionID: transactionID });
   } catch (error) {
+    await connection.rollback();
     console.error('Error creating transaction:', error);
     res.status(500).json({ error: 'Error creating transaction' });
+  } finally {
+    connection.release();
   }
 });
 
@@ -262,6 +299,10 @@ app.post('/api/transactions', async (req, res) => {
 app.post('/api/orderdetails', async (req, res) => {
   try {
     const { TransactionID, StockID, Subtotal, DiscountedPrice, Quantity } = req.body;
+    
+    // Log the received data
+    console.log('Received order detail data:', req.body);
+    
     if (!TransactionID || !StockID || !Subtotal || !DiscountedPrice || !Quantity) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -743,13 +784,17 @@ app.get('/api/transactions/:id/receipt', async (req, res) => {
 
 // Define a route to get all employees
 app.get('/api/employees', async (req, res) => {
-  const query = 'SELECT EmployeeID, EmployeeUsername FROM employee';
+  const { username } = req.query;
+  const query = 'SELECT EmployeeID, EmployeeUsername FROM employee WHERE EmployeeUsername = ?';
   try {
-    const results = await executeQuery(query);
-    res.status(200).json(results);
+    const results = await executeQuery(query, [username]);
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Employee not found' });
+    }
+    res.status(200).json(results[0]);
   } catch (err) {
-    console.error('Error fetching employees:', err);
-    res.status(500).send('Server error');
+    console.error('Error fetching employee:', err);
+    res.status(500).json({ error: 'Database error' });
   }
 });
 
@@ -779,6 +824,37 @@ app.get('/api/products-dropdown', async (req, res) => {
   } catch (err) {
     console.error('Error fetching products for dropdown:', err);
     res.status(500).send('Server error');
+  }
+});
+
+// Define a route to get the top value of the schedule table
+app.get('/api/schedule/top', async (req, res) => {
+  const query = 'SELECT ScheduleID FROM schedule ORDER BY ScheduleID DESC LIMIT 1';
+  try {
+    const results = await executeQuery(query);
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'No schedule found' });
+    }
+    res.status(200).json(results[0]);
+  } catch (err) {
+    console.error('Error fetching top schedule:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
+// Define a route to get stock-in item by product ID
+app.get('/api/stockin', async (req, res) => {
+  const { productID } = req.query;
+  const query = 'SELECT StockID FROM stockin WHERE ProductID = ? LIMIT 1';
+  try {
+    const results = await executeQuery(query, [productID]);
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Stock not found' });
+    }
+    res.status(200).json(results[0]);
+  } catch (err) {
+    console.error('Error fetching stock:', err);
+    res.status(500).json({ error: 'Database error' });
   }
 });
 

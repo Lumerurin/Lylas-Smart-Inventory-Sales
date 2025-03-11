@@ -86,7 +86,7 @@ const CreateOrder = () => {
   const amountPaidValue = parseFloat(amountPaid) || 0;
   const change = amountPaidValue - total;
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     // Validation
     if (cartItems.length === 0) {
       setErrorMessage("Please add items to cart before checkout");
@@ -98,8 +98,60 @@ const CreateOrder = () => {
       return;
     }
 
-    setErrorMessage("");
-    navigate("/admin/create-order/checkout/");
+    try {
+      // Fetch employeeID based on username
+      const employeeResponse = await axios.get(`http://localhost:5000/api/employees?username=${username}`);
+      const employeeID = employeeResponse.data.EmployeeID;
+
+      if (!employeeID) {
+        setErrorMessage("Employee not found");
+        return;
+      }
+
+      // Fetch the top value of scheduleID
+      const scheduleResponse = await axios.get("http://localhost:5000/api/schedule/top");
+      const scheduleID = scheduleResponse.data.ScheduleID;
+
+      // Calculate the total discount
+      const discountAmount = parseFloat(discount) || 0;
+
+      // Prepare transaction data
+      const transactionData = {
+        EmployeeID: employeeID,
+        ScheduleID: scheduleID,
+        TotalCost: subtotal,
+        DiscountedPrice: discountAmount,
+        TransactionDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
+        CashPayment: amountPaidValue,
+        items: cartItems.map(item => ({
+          ProductID: item.ProductID,
+          quantity: item.quantity,
+          Price: item.Price
+        }))
+      };
+
+      // Log the transaction data
+      console.log('Sending transaction data:', transactionData);
+
+      // Save transaction to the database
+      const transactionResponse = await axios.post("http://localhost:5000/api/transactions", transactionData);
+      const transactionID = transactionResponse.data.TransactionID;
+
+      setErrorMessage("");
+      navigate("/admin/create-order/checkout/", {
+        state: {
+          cartItems,
+          totalAmount: subtotal,
+          cashReceived: amountPaidValue,
+          transactionID,
+          employeeID,
+          discountAmount
+        }
+      });
+    } catch (error) {
+      console.error("Error during checkout:", error);
+      setErrorMessage("Checkout failed. Please try again.");
+    }
   };
 
   return (
