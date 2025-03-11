@@ -782,16 +782,26 @@ app.get('/api/transactions/:id/receipt', async (req, res) => {
   }
 });
 
-// Define a route to get all employees
+// Define a route to get all employees or a specific employee by username
 app.get('/api/employees', async (req, res) => {
   const { username } = req.query;
-  const query = 'SELECT EmployeeID, EmployeeUsername FROM employee WHERE EmployeeUsername = ?';
+  let query;
+  let params;
+
+  if (username) {
+    query = 'SELECT EmployeeID, EmployeeUsername FROM employee WHERE EmployeeUsername = ?';
+    params = [username];
+  } else {
+    query = 'SELECT EmployeeID, EmployeeUsername FROM employee';
+    params = [];
+  }
+
   try {
-    const results = await executeQuery(query, [username]);
+    const results = await executeQuery(query, params);
     if (results.length === 0) {
       return res.status(404).json({ error: 'Employee not found' });
     }
-    res.status(200).json(results[0]);
+    res.status(200).json(results);
   } catch (err) {
     console.error('Error fetching employee:', err);
     res.status(500).json({ error: 'Database error' });
