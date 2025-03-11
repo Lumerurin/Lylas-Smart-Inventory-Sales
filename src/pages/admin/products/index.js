@@ -8,6 +8,7 @@ const ProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
   const navigate = useNavigate();
 
   const data = {
@@ -159,6 +160,7 @@ const ProductsPage = () => {
         setProducts((prevProducts) =>
           prevProducts.filter((product) => product.ProductID !== productID)
         );
+        setProductToDelete(null);
       } else {
         console.error("Error deleting product:", response.statusText);
       }
@@ -227,7 +229,7 @@ const ProductsPage = () => {
                   <TrashSimple
                     size={20}
                     className="cursor-pointer"
-                    onClick={() => handleDelete(item.ProductID)}
+                    onClick={() => setProductToDelete(item)}
                     color="#9c0000"
                   />
                 </div>
@@ -244,6 +246,29 @@ const ProductsPage = () => {
           onClose={handleModalClose}
           onSave={handleSave}
         />
+      )}
+
+      {productToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-5 rounded-lg shadow-lg w-1/3">
+            <h2 className="text-xl mb-4">Confirm Deletion</h2>
+            <p>Are you sure you want to delete the product "{productToDelete.ProductName}"?</p>
+            <div className="flex justify-end mt-4">
+              <button
+                className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
+                onClick={() => setProductToDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded"
+                onClick={() => handleDelete(productToDelete.ProductID)}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </Layout>
   );
