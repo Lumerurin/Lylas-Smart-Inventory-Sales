@@ -868,6 +868,26 @@ app.get('/api/stockin', async (req, res) => {
   }
 });
 
+// Fetch transaction data for sales tracking
+app.get('/api/transactions', async (req, res) => {
+  const query = `
+    SELECT 
+      TransactionID, 
+      EmployeeID, 
+      ScheduleID, 
+      TransactionDate, 
+      TotalCost 
+    FROM transactions
+  `;
+  try {
+    const results = await executeQuery(query);
+    res.status(200).json(results);
+  } catch (err) {
+    console.error('Error fetching transactions:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
