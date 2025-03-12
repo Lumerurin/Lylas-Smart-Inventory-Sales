@@ -1048,19 +1048,6 @@ app.get('/api/sales/total', async (req, res) => {
   }
 });
 
-// Define a route to get total transactions
-app.get('/api/transactions/total', async (req, res) => {
-  const query = 'SELECT COUNT(*) AS totalTransactions FROM transactions';
-  try {
-    const results = await executeQuery(query);
-    const totalTransactions = results[0].totalTransactions || 0;
-    res.status(200).json({ totalTransactions });
-  } catch (err) {
-    console.error('Error fetching total transactions:', err);
-    res.status(500).json({ error: 'Database error', details: err.message });
-  }
-});
-
 // Define a route to get total month sales
 app.get('/api/sales/month', async (req, res) => {
   const query = `

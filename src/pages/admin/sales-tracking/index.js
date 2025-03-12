@@ -13,6 +13,7 @@ const SalesTrackingPage = () => {
   const [totalTransactions, setTotalTransactions] = useState(0);
   const [totalMonthSales, setTotalMonthSales] = useState(0);
   const [totalYearSales, setTotalYearSales] = useState(0);
+  const [selectedDate, setSelectedDate] = useState("");
 
   const navigate = useNavigate();
 
@@ -53,9 +54,14 @@ const SalesTrackingPage = () => {
   }, []);
 
   const filteredTransactions = transactions.filter(
-    (transaction) =>
-      transaction.TransactionID.toString().includes(searchQuery) ||
-      transaction.EmployeeID.toString().includes(searchQuery)
+    (transaction) => {
+      const matchesSearchQuery = transaction.TransactionID.toString().includes(searchQuery) ||
+                                transaction.EmployeeID.toString().includes(searchQuery);
+      const matchesSelectedDate = selectedDate ? 
+        new Date(transaction.TransactionDate).toLocaleDateString() === new Date(selectedDate).toLocaleDateString() : 
+        true;
+      return matchesSearchQuery && matchesSelectedDate;
+    }
   );
 
   if (isLoading) {
@@ -96,11 +102,6 @@ const SalesTrackingPage = () => {
               label: "Total Sales",
             },
             {
-              icon: <CashRegister size={40} weight="light" />,
-              value: `P${totalTransactions.toFixed(2)}`,
-              label: "Total Transactions",
-            },
-            {
               icon: <CalendarDots size={32} />,
               value: `P${totalMonthSales.toFixed(2)}`,
               label: "Total Month Sales",
@@ -130,7 +131,7 @@ const SalesTrackingPage = () => {
           <div className="flex items-center relative">
             <input
               className=" text-left pl-14"
-              placeholder="Search by name or product number"
+              placeholder="Search by Transaction ID or Employee ID"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -140,7 +141,10 @@ const SalesTrackingPage = () => {
           <div className="flex items-center">
             <input
               type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
               className="flex items-center gap-2 bg-blueSerenity text-white px-4 rounded-lg shadow-md hover:scale-110 transition-all duration-300 w-fit uppercase"
+              onFocus={(e) => e.target.showPicker()}
             />
           </div>
         </div>
