@@ -247,7 +247,7 @@ app.post('/api/transactions', async (req, res) => {
     // Log the received data
     console.log('Received transaction data:', req.body);
     
-    if (!EmployeeID || !ScheduleID || !TotalCost || !DiscountedPrice || !TransactionDate || !CashPayment || !items || items.length === 0) {
+    if (!EmployeeID || !ScheduleID || !TotalCost || DiscountedPrice === undefined || !TransactionDate || !CashPayment || !items || items.length === 0) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -303,7 +303,7 @@ app.post('/api/orderdetails', async (req, res) => {
     // Log the received data
     console.log('Received order detail data:', req.body);
     
-    if (!TransactionID || !StockID || !Subtotal || !DiscountedPrice || !Quantity) {
+    if (!TransactionID || !StockID || !Subtotal || DiscountedPrice === undefined || !Quantity) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -782,26 +782,16 @@ app.get('/api/transactions/:id/receipt', async (req, res) => {
   }
 });
 
-// Define a route to get all employees or a specific employee by username
+// Define a route to get all employees
 app.get('/api/employees', async (req, res) => {
   const { username } = req.query;
-  let query;
-  let params;
-
-  if (username) {
-    query = 'SELECT EmployeeID, EmployeeUsername FROM employee WHERE EmployeeUsername = ?';
-    params = [username];
-  } else {
-    query = 'SELECT EmployeeID, EmployeeUsername FROM employee';
-    params = [];
-  }
-
+  const query = 'SELECT EmployeeID, EmployeeUsername FROM employee WHERE EmployeeUsername = ?';
   try {
-    const results = await executeQuery(query, params);
+    const results = await executeQuery(query, [username]);
     if (results.length === 0) {
       return res.status(404).json({ error: 'Employee not found' });
     }
-    res.status(200).json(results);
+    res.status(200).json(results[0]);
   } catch (err) {
     console.error('Error fetching employee:', err);
     res.status(500).json({ error: 'Database error' });
