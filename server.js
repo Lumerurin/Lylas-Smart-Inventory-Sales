@@ -175,6 +175,7 @@ app.get('/api/stockin', async (req, res) => {
            s.ExpiryDate, p.ProductName
     FROM stockin s
     JOIN products p ON s.ProductID = p.ProductID
+    ORDER BY s.ExpiryDate DESC
   `;
   try {
     const results = await executeQuery(query);
@@ -228,6 +229,7 @@ app.get('/api/stockout', async (req, res) => {
     JOIN employee e ON so.EmployeeID = e.EmployeeID
     JOIN stockin si ON sod.StockID = si.StockID
     JOIN products p ON si.ProductID = p.ProductID
+    ORDER BY so.Date DESC
   `;
   try {
     const results = await executeQuery(query);
@@ -421,13 +423,11 @@ app.delete('/api/stockout/:id', async (req, res) => {
   }
 });
 
-// KANI AKONG GI DAGDAG MEL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 // Get transaction by ID
 app.get('/api/transactions/:id', async (req, res) => {
   const { id } = req.params;
   const query = `
-    SELECT t.TransactionID, t.CustomerID, t.EmployeeID, 
+    SELECT t.TransactionID, t.EmployeeID, 
            t.ScheduleID, t.TotalCost, t.TransactionDate, 
            t.CashPayment, e.EmployeeUsername
     FROM transactions t
@@ -721,7 +721,7 @@ app.get('/api/transactions/:id/receipt', async (req, res) => {
   try {
     // Get transaction details
     const transactionQuery = `
-      SELECT t.TransactionID, t.CustomerID, t.EmployeeID, 
+      SELECT t.TransactionID, t.EmployeeID, 
              t.TotalCost, t.TransactionDate, t.CashPayment,
              e.EmployeeUsername
       FROM transactions t
@@ -868,6 +868,7 @@ app.get('/api/transactions', async (req, res) => {
       TransactionDate, 
       TotalCost 
     FROM transactions
+    ORDER BY TransactionDate DESC
   `;
   try {
     const results = await executeQuery(query);
@@ -878,7 +879,6 @@ app.get('/api/transactions', async (req, res) => {
   }
 });
 
-// diri ko nag edit mell
 app.get('/api/monthly-sales', async (req, res) => {
   const year = req.query.year || new Date().getFullYear();
   

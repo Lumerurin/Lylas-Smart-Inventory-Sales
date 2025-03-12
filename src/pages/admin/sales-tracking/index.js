@@ -34,15 +34,13 @@ const SalesTrackingPage = () => {
   useEffect(() => {
     const fetchSummaryData = async () => {
       try {
-        const [totalSalesRes, totalTransactionsRes, totalMonthSalesRes, totalYearSalesRes] = await Promise.all([
+        const [totalSalesRes, totalMonthSalesRes, totalYearSalesRes] = await Promise.all([
           fetch('http://localhost:5000/api/sales/total').then(res => res.json()),
-          fetch('http://localhost:5000/api/transactions/total').then(res => res.json()),
           fetch('http://localhost:5000/api/sales/month').then(res => res.json()),
           fetch('http://localhost:5000/api/sales/year').then(res => res.json())
         ]);
 
         setTotalSales(Number(totalSalesRes.totalSales));
-        setTotalTransactions(Number(totalTransactionsRes.totalTransactions));
         setTotalMonthSales(Number(totalMonthSalesRes.totalMonthSales));
         setTotalYearSales(Number(totalYearSalesRes.totalYearSales));
       } catch (error) {
@@ -53,16 +51,18 @@ const SalesTrackingPage = () => {
     fetchSummaryData();
   }, []);
 
-  const filteredTransactions = transactions.filter(
-    (transaction) => {
-      const matchesSearchQuery = transaction.TransactionID.toString().includes(searchQuery) ||
-                                transaction.EmployeeID.toString().includes(searchQuery);
-      const matchesSelectedDate = selectedDate ? 
-        new Date(transaction.TransactionDate).toLocaleDateString() === new Date(selectedDate).toLocaleDateString() : 
-        true;
-      return matchesSearchQuery && matchesSelectedDate;
-    }
-  );
+  const filteredTransactions = transactions
+    .filter(
+      (transaction) => {
+        const matchesSearchQuery = transaction.TransactionID.toString().includes(searchQuery) ||
+                                  transaction.EmployeeID.toString().includes(searchQuery);
+        const matchesSelectedDate = selectedDate ? 
+          new Date(transaction.TransactionDate).toLocaleDateString() === new Date(selectedDate).toLocaleDateString() : 
+          true;
+        return matchesSearchQuery && matchesSelectedDate;
+      }
+    )
+    .sort((a, b) => new Date(b.TransactionDate) - new Date(a.TransactionDate));
 
   if (isLoading) {
     return (
