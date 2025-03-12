@@ -108,8 +108,8 @@ const CreateOrder = () => {
         return;
       }
 
-      // Fetch the top value of scheduleID
-      const scheduleResponse = await axios.get("http://localhost:5000/api/schedule/top");
+      // Fetch the most recent scheduleID
+      const scheduleResponse = await axios.get("http://localhost:5000/api/schedule/recent");
       const scheduleID = scheduleResponse.data.ScheduleID;
 
       // Calculate the total discount

@@ -842,6 +842,21 @@ app.get('/api/schedule/top', async (req, res) => {
   }
 });
 
+// Define a route to get the most recent schedule
+app.get('/api/schedule/recent', async (req, res) => {
+  const query = 'SELECT ScheduleID FROM schedule ORDER BY ScheduleStartDate DESC LIMIT 1';
+  try {
+    const results = await executeQuery(query);
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'No schedule found' });
+    }
+    res.status(200).json(results[0]);
+  } catch (err) {
+    console.error('Error fetching recent schedule:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
 // Define a route to get stock-in item by product ID
 app.get('/api/stockin', async (req, res) => {
   const { productID } = req.query;
