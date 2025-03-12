@@ -27,7 +27,7 @@ const EventInventoryPage = () => {
   const [deleteStockOut, setDeleteStockOut] = useState(null); // New state for deleting stock-out
   const [newStockOut, setNewStockOut] = useState({
     Date: '',
-    EmployeeID: '',
+    EmployeeUsername: '', // Change EmployeeID to EmployeeUsername
     stockoutDetails: [{ StockID: '', Quantity: '', Remarks: '' }]
   });
   const [showAddStockOut, setShowAddStockOut] = useState(false);
@@ -76,11 +76,6 @@ const EventInventoryPage = () => {
   };
   
   const fetchDropdownData = () => {
-    fetch('http://localhost:5000/api/employees')
-      .then(response => response.json())
-      .then(data => setEmployees(data))
-      .catch(error => console.error('Error fetching employees:', error));
-  
     fetch('http://localhost:5000/api/available-stockin')
       .then(response => response.json())
       .then(data => setAvailableStockIn(data))
@@ -199,13 +194,24 @@ const EventInventoryPage = () => {
 
   const handleAddStockOut = () => {
     const apiUrl = 'http://localhost:5000/api/stockout';
-    fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(newStockOut),
-    })
+    fetch(`http://localhost:5000/api/employees?username=${newStockOut.EmployeeUsername}`)
+      .then(response => response.json())
+      .then(employee => {
+        if (employee.error) {
+          throw new Error(employee.error);
+        }
+        const stockOutData = {
+          ...newStockOut,
+          EmployeeID: employee.EmployeeID // Use fetched EmployeeID
+        };
+        return fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(stockOutData),
+        });
+      })
       .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -215,7 +221,7 @@ const EventInventoryPage = () => {
       .then(data => {
         console.log('Stock-out item added:', data);
         fetchData(); // Refresh data after addition
-        setNewStockOut({ Date: '', EmployeeID: '', stockoutDetails: [{ StockID: '', Quantity: '', Remarks: '' }] });
+        setNewStockOut({ Date: '', EmployeeUsername: '', stockoutDetails: [{ StockID: '', Quantity: '', Remarks: '' }] });
         setShowAddStockOut(false); // Close the popup after adding
       })
       .catch(error => console.error('Error adding stock-out item:', error));
@@ -602,19 +608,13 @@ const EventInventoryPage = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Employee</label>
-                <select
-                  value={newStockOut.EmployeeID}
-                  onChange={(e) => setNewStockOut({ ...newStockOut, EmployeeID: e.target.value })}
+                <label className="block text-sm font-medium text-gray-700">Employee Username</label>
+                <input
+                  type="text"
+                  value={newStockOut.EmployeeUsername}
+                  onChange={(e) => setNewStockOut({ ...newStockOut, EmployeeUsername: e.target.value })}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                >
-                  <option value="">Select Employee</option>
-                  {Array.isArray(employees) && employees.map(employee => (
-                    <option key={employee.EmployeeID} value={employee.EmployeeID}>
-                      {employee.EmployeeUsername}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
               {newStockOut.stockoutDetails.map((detail, index) => (
                 <div key={index} className="mb-4">
