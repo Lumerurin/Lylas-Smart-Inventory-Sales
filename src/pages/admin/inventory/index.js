@@ -13,6 +13,7 @@ const InventoryPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [events, setEvents] = useState([]);
   const [eventToDelete, setEventToDelete] = useState(null);
+  const [searchQuery, setSearchQuery] = useState(""); // Add searchQuery state
   const navigate = useNavigate(); // Initialize useNavigate
 
   const fetchEvents = async () => {
@@ -72,6 +73,12 @@ const InventoryPage = () => {
     }
   };
 
+  const filteredEvents = events.filter(
+    (event) =>
+      event.EventTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      String(event.ScheduleID).toLowerCase().includes(searchQuery.toLowerCase()) // Convert ScheduleID to string
+  );
+
   return (
     <Layout>
       <section className="h-full flex flex-col">
@@ -82,7 +89,9 @@ const InventoryPage = () => {
           <div className="flex items-center relative">
             <input
               className="text-left pl-14"
-              placeholder="Search by name or product number"
+              placeholder="Search by event title or schedule ID"
+              value={searchQuery} // Bind searchQuery to input value
+              onChange={(e) => setSearchQuery(e.target.value)} // Update searchQuery on input change
             />
             <MagnifyingGlass size={32} className="absolute ml-3" />
           </div>
@@ -127,7 +136,7 @@ const InventoryPage = () => {
           </div>
 
           <div className="w-full h-full overflow-y-scroll flex flex-col gap-3">
-            {events.map((event) => (
+            {filteredEvents.map((event) => (
               <div
                 className="bg-solidWhite w-full rounded-lg p-5 grid grid-cols-7 items-center"
                 key={event.EventID}
