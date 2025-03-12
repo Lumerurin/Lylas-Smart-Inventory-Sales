@@ -888,6 +888,165 @@ app.get('/api/transactions', async (req, res) => {
   }
 });
 
+// diri ko nag edit mell
+app.get('/api/monthly-sales', async (req, res) => {
+  const year = req.query.year || new Date().getFullYear();
+  
+  
+  const query = `
+    SELECT 
+      MONTH(TransactionDate) AS month,
+      DATE_FORMAT(TransactionDate, '%b') AS monthName,
+      SUM(TotalCost) AS totalSales
+    FROM transactions
+    WHERE YEAR(TransactionDate) = ?
+    GROUP BY MONTH(TransactionDate), monthName
+    ORDER BY MONTH(TransactionDate)
+  `;
+  
+  try {
+    const results = await executeQuery(query, [year]);
+    
+    // Create a complete dataset with all months (even those with no sales)
+    const monthlyData = Array(12).fill().map((_, i) => ({
+      month: i + 1,
+      monthName: new Date(2000, i, 1).toLocaleString('default', { month: 'short' }),
+      totalSales: 0
+    }));
+    
+    // Fill in the actual data we have
+    results.forEach(row => {
+      const monthIndex = row.month - 1;
+      monthlyData[monthIndex].totalSales = parseFloat(row.totalSales) || 0;
+    });
+    
+     res.status(200).json(monthlyData);
+  } catch (err) {
+    console.error('Error fetching monthly sales data:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
+
+// Define a route to get today's sale
+app.get('/api/sales/today', async (req, res) => {
+  const query = `
+    SELECT SUM(TotalCost) AS totalSales
+    FROM transactions
+    WHERE DATE(TransactionDate) = CURDATE()
+  `;
+  
+  try {
+    const results = await executeQuery(query);
+    const totalSales = results[0].totalSales || 0;
+    res.status(200).json({ totalSales });
+  } catch (err) {
+    console.error('Error fetching today\'s sale:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
+// Define a route to get yearly total sale
+app.get('/api/sales/yearly', async (req, res) => {
+  const year = req.query.year || new Date().getFullYear();
+  
+  const query = `
+    SELECT SUM(TotalCost) AS totalSales
+    FROM transactions
+    WHERE YEAR(TransactionDate) = ?
+  `;
+  
+  try {
+    const results = await executeQuery(query, [year]);
+    const totalSales = results[0].totalSales || 0;
+    res.status(200).json({ totalSales });
+  } catch (err) {
+    console.error('Error fetching yearly total sale:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
+// Define a route to get net income
+app.get('/api/income/net', async (req, res) => {
+  const year = req.query.year || new Date().getFullYear();
+  
+  const query = `
+    SELECT SUM(TotalCost) AS netIncome
+    FROM transactions
+    WHERE YEAR(TransactionDate) = ?
+  `;
+  
+  try {
+    const results = await executeQuery(query, [year]);
+    const netIncome = results[0].netIncome || 0;
+    res.status(200).json({ netIncome });
+  } catch (err) {
+    console.error('Error fetching net income:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
+// Define a route to get the number of products
+app.get('/api/products/count', async (req, res) => {
+  const query = `
+    SELECT COUNT(*) AS productCount
+    FROM products
+  `;
+  
+  try {
+    const results = await executeQuery(query);
+    const productCount = results[0].productCount || 0;
+    res.status(200).json({ productCount });
+  } catch (err) {
+    console.error('Error fetching product count:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
+
+app.get('/api/products/best-selling', async (req, res) => {
+  const { range } = req.query;
+  let interval;
+
+  switch (range) {
+    case '7days':
+      interval = '7 DAY';
+      break;
+    case '1month':
+      interval = '1 MONTH';
+      break;
+    case '1year':
+      interval = '1 YEAR';
+      break;
+    default:
+      return res.status(400).json({ error: 'Invalid range' });
+  }
+
+  const query = `
+    SELECT 
+      p.ProductName,
+      SUM(od.Quantity) AS totalSales
+    FROM orderdetails od
+    JOIN stockin si ON od.StockID = si.StockID
+    JOIN products p ON si.ProductID = p.ProductID
+    JOIN transactions t ON od.TransactionID = t.TransactionID
+    WHERE t.TransactionDate >= DATE_SUB(CURDATE(), INTERVAL ${interval})
+    GROUP BY p.ProductName
+    ORDER BY totalSales DESC
+    LIMIT 10
+  `;
+
+  try {
+    const results = await executeQuery(query);
+    res.status(200).json(results);
+  } catch (err) {
+    console.error('Error fetching best-selling products:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
+
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
