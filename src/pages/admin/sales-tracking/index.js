@@ -9,6 +9,10 @@ const SalesTrackingPage = () => {
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [totalSales, setTotalSales] = useState(0);
+  const [totalTransactions, setTotalTransactions] = useState(0);
+  const [totalMonthSales, setTotalMonthSales] = useState(0);
+  const [totalYearSales, setTotalYearSales] = useState(0);
 
   const navigate = useNavigate();
 
@@ -24,6 +28,28 @@ const SalesTrackingPage = () => {
         setError(error.message);
         setIsLoading(false);
       });
+  }, []);
+
+  useEffect(() => {
+    const fetchSummaryData = async () => {
+      try {
+        const [totalSalesRes, totalTransactionsRes, totalMonthSalesRes, totalYearSalesRes] = await Promise.all([
+          fetch('http://localhost:5000/api/sales/total').then(res => res.json()),
+          fetch('http://localhost:5000/api/transactions/total').then(res => res.json()),
+          fetch('http://localhost:5000/api/sales/month').then(res => res.json()),
+          fetch('http://localhost:5000/api/sales/year').then(res => res.json())
+        ]);
+
+        setTotalSales(Number(totalSalesRes.totalSales));
+        setTotalTransactions(Number(totalTransactionsRes.totalTransactions));
+        setTotalMonthSales(Number(totalMonthSalesRes.totalMonthSales));
+        setTotalYearSales(Number(totalYearSalesRes.totalYearSales));
+      } catch (error) {
+        console.error('Error fetching summary data:', error);
+      }
+    };
+
+    fetchSummaryData();
   }, []);
 
   const filteredTransactions = transactions.filter(
@@ -66,22 +92,22 @@ const SalesTrackingPage = () => {
           {[
             {
               icon: <Coins size={32} />,
-              value: "P30,000.00",
+              value: `P${totalSales.toFixed(2)}`,
               label: "Total Sales",
             },
             {
               icon: <CashRegister size={40} weight="light" />,
-              value: "50",
+              value: `P${totalTransactions.toFixed(2)}`,
               label: "Total Transactions",
             },
             {
               icon: <CalendarDots size={32} />,
-              value: "P 30,000.00",
+              value: `P${totalMonthSales.toFixed(2)}`,
               label: "Total Month Sales",
             },
             {
               icon: <CalendarDots size={32} />,
-              value: "P 30,000.00",
+              value: `P${totalYearSales.toFixed(2)}`,
               label: "Total Year Sales",
             },
           ].map((item, index) => (

@@ -1035,7 +1035,66 @@ app.get('/api/products/best-selling', async (req, res) => {
   }
 });
 
+// Define a route to get total sales
+app.get('/api/sales/total', async (req, res) => {
+  const query = 'SELECT SUM(TotalCost) AS totalSales FROM transactions';
+  try {
+    const results = await executeQuery(query);
+    const totalSales = results[0].totalSales || 0;
+    res.status(200).json({ totalSales });
+  } catch (err) {
+    console.error('Error fetching total sales:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
 
+// Define a route to get total transactions
+app.get('/api/transactions/total', async (req, res) => {
+  const query = 'SELECT COUNT(*) AS totalTransactions FROM transactions';
+  try {
+    const results = await executeQuery(query);
+    const totalTransactions = results[0].totalTransactions || 0;
+    res.status(200).json({ totalTransactions });
+  } catch (err) {
+    console.error('Error fetching total transactions:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
+// Define a route to get total month sales
+app.get('/api/sales/month', async (req, res) => {
+  const query = `
+    SELECT SUM(TotalCost) AS totalMonthSales
+    FROM transactions
+    WHERE MONTH(TransactionDate) = MONTH(CURDATE())
+      AND YEAR(TransactionDate) = YEAR(CURDATE())
+  `;
+  try {
+    const results = await executeQuery(query);
+    const totalMonthSales = results[0].totalMonthSales || 0;
+    res.status(200).json({ totalMonthSales });
+  } catch (err) {
+    console.error('Error fetching total month sales:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
+// Define a route to get total year sales
+app.get('/api/sales/year', async (req, res) => {
+  const query = `
+    SELECT SUM(TotalCost) AS totalYearSales
+    FROM transactions
+    WHERE YEAR(TransactionDate) = YEAR(CURDATE())
+  `;
+  try {
+    const results = await executeQuery(query);
+    const totalYearSales = results[0].totalYearSales || 0;
+    res.status(200).json({ totalYearSales });
+  } catch (err) {
+    console.error('Error fetching total year sales:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
 
 // Start the server
 app.listen(port, () => {
