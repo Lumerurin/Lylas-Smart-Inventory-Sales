@@ -10,7 +10,6 @@ const SalesTrackingPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalSales, setTotalSales] = useState(0);
-  const [totalTransactions, setTotalTransactions] = useState(0);
   const [totalMonthSales, setTotalMonthSales] = useState(0);
   const [totalYearSales, setTotalYearSales] = useState(0);
   const [selectedDate, setSelectedDate] = useState("");
