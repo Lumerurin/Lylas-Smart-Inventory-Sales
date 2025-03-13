@@ -178,11 +178,6 @@ const SalesTrackingPage = () => {
                 <span>{transaction.ScheduleID}</span>
                 <span>{new Date(transaction.TransactionDate).toLocaleDateString()}</span>
                 <span>P {parseFloat(transaction.TotalCost).toFixed(2)}</span>
-                <CaretRight
-                  size={28}
-                  color="#4E76CD"
-                  className="hover:scale-110 transition-all duration-200 hover:cursor-pointer"
-                />
               </div>
             ))
           ) : (
