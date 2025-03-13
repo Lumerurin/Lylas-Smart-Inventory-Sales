@@ -3,24 +3,28 @@ import BestSellingProducts from "./BestSellingProducts";
 
 const BestSellingProductsContainer = () => {
   const [bestSellingProducts, setBestSellingProducts] = useState([]);
-  const [selectedRange, setSelectedRange] = useState('7days');
+  const [selectedRange, setSelectedRange] = useState("7days");
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchBestSellingProducts = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/products/best-selling?range=${selectedRange}`);
-        
+        const response = await fetch(
+          `http://localhost:5000/api/products/best-selling?range=${selectedRange}`
+        );
+
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        
+
         const data = await response.json();
         setBestSellingProducts(data);
         setError(null);
       } catch (err) {
         console.error("Error fetching best-selling products:", err);
-        setError("Failed to load best-selling products. Please try again later.");
+        setError(
+          "Failed to load best-selling products. Please try again later."
+        );
       }
     };
 
