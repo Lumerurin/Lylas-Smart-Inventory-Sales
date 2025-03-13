@@ -1105,6 +1105,21 @@ app.get('/api/sales/year', async (req, res) => {
   }
 });
 
+// Define a route to get all employees without filtering by username
+app.get('/api/all-employees', async (req, res) => {
+  const query = 'SELECT EmployeeID, EmployeeUsername, EmployeePhoneNumber, EmployeeEmail FROM employee';
+  try {
+    const results = await executeQuery(query);
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'No employees found' });
+    }
+    res.status(200).json(results);
+  } catch (err) {
+    console.error('Error fetching employees:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

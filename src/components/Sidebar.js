@@ -59,7 +59,7 @@ const Sidebar = () => {
       },
       employees: {
         text: "Employees",
-        redirect: "/admin/sales-tracking",
+        redirect: "/admin/employees",
         icon: <UsersThree size={30} weight="light" />,
       },
     },
