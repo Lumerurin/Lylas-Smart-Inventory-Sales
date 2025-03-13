@@ -46,11 +46,13 @@ Welcome to **Lyla's Smart Inventory and Transaction System**! This web-based app
     npm start
 **The frontend will be available at http://localhost:3000.**
 
-**On another terminal (Ctrl+Shift+`)**
+**On another terminal, (Ctrl+Shift+`)**
+
 4. **Run the Backend**:
    - **Start the Node.js server with:**
    ```bash
     node server.js
+
 
 **The backend will be available at http://localhost:5000.**
 
