@@ -51,7 +51,7 @@ Welcome to **Lyla's Smart Inventory and Transaction System**! This web-based app
    ```bash
     node server.js
 
-** The backend will be available at http://localhost:5000.**
+**The backend will be available at http://localhost:5000.**
 
 ## Contributors
 
