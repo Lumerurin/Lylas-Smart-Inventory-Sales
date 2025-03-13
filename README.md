@@ -36,12 +36,12 @@ Welcome to **Lyla's Smart Inventory and Transaction System**! This web-based app
    git clone https://github.com/Lumerurin/Lylas-Smart-Inventory-Sales.git
 
 2. **Install Dependencies**:
-   - **Navigate to the frontend and backend directories and install the required packages:**:
+   - **Navigate to the frontend and backend directories and install the required packages:**
    ```bash
     npm install
 
 3. **Run the Frontend**:
-   - **To start the React app, run:**:
+   - **To start the React app, run:**
    ```bash
     npm start
 **The frontend will be available at http://localhost:3000.**
@@ -52,7 +52,6 @@ Welcome to **Lyla's Smart Inventory and Transaction System**! This web-based app
    - **Start the Node.js server with:**
    ```bash
     node server.js
-
 
 **The backend will be available at http://localhost:5000.**
 
@@ -70,8 +69,8 @@ If you encounter errors or bugs, follow these steps to troubleshoot:
 - Close any existing processes using the ports (Kill the terminal) 
 - Restart VS Code and re-run the frontend and backend:
    ```bash
-    npm start  // For frontend
-    node server.js  // For backend
+    npm start  # For frontend
+    node server.js # For backend
 
 4. **Verify Environment Variables**: Ensure your .env file is correctly set up with the required configurations.
 
