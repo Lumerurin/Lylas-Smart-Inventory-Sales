@@ -4,26 +4,28 @@ Welcome to Lyla's Smart Inventory and Transaction System! This web-based applica
 
 ## Technologies Used
 
-- **Frontend**
--HTML, CSS, JavaScript, React
--Figma (for wireframe and UI design)
-**Backend**
--Node.js (for server-side logic)
--Express.js (for handling API requests)
--MySQL (for database storage)
-**Database Management**
-MySQL (hosted on a cloud platform: Railway)
+- **Frontend**  
+  - HTML, CSS, JavaScript, React  
+  - Figma (for wireframe and UI design)  
+
+- **Backend**  
+  - Node.js (for server-side logic)  
+  - Express.js (for handling API requests)  
+  - MySQL (for database storage)  
+
+- **Database Management**  
+  - MySQL (hosted on a cloud platform: Railway)  
 
 ## Features
 
--**Dashboard**: Displays an overview of sales, revenues, inventory status, and best-selling products.
--**Sales & Transactions Processing**: Facilitates customer purchases, processes payments, generates digital receipts, and maintains transaction history.
--**Inventory Management**: Allows real-time tracking of stock-in and stock-out, ensuring accurate stock monitoring.
--**Sales Tracking**: Records sold products with details such as quantity, price, and date of sale.
--**Employee Management**: Stores employee details, including names, roles, and contact information.
--**User Authentication**: Provides secure login functionality for employees and management.
--**Cloud-Based Data Storage**: Enables secure, real-time access across multiple devices.
--**Mobile Compatability**: Ensures the application is fully responsive and accessible on various mobile devices, providing a seamless user experience.
+- **Dashboard** - Displays an overview of sales, revenues, inventory status, and best-selling products.  
+- **Sales & Transactions Processing** - Facilitates customer purchases, processes payments, generates digital receipts, and maintains transaction history.  
+- **Inventory Management** - Allows real-time tracking of stock-in and stock-out, ensuring accurate stock monitoring.  
+- **Sales Tracking** - Records sold products with details such as quantity, price, and date of sale.  
+- **Employee Management** - Stores employee details, including names, roles, and contact information.  
+- **User Authentication** - Provides secure login functionality for employees and management.  
+- **Cloud-Based Data Storage** - Enables secure, real-time access across multiple devices.  
+- **Mobile Compatibility** - Ensures the application is fully responsive and accessible on various mobile devices, providing a seamless user experience.  
 
 ## Getting Started
 
