@@ -44,14 +44,14 @@ Welcome to **Lyla's Smart Inventory and Transaction System**! This web-based app
    - **To start the React app, run:**:
    ```bash
     npm start
-   - **The frontend will be available at http://localhost:3000.**
+**The frontend will be available at http://localhost:3000.**
 
 4. **Run the Backend**:
    - **Start the Node.js server with:**:
    ```bash
     node server.js
-    ** The backend will be available at http://localhost:5000.**
 
+** The backend will be available at http://localhost:5000.**
 
 ## Contributors
 
