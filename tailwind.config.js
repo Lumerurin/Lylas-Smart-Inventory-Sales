@@ -29,7 +29,7 @@ export default {
         greenLight: "#B1E9BA",
       },
       backgroundImage: {
-        cookieBG: "url('/src/img/cookie_BG.png')", // Update with the correct path
+        cookieBG: "url('/src/img/cookie_BG.png')",
       },
     },
   },
