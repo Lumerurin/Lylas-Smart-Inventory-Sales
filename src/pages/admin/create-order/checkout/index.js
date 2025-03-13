@@ -14,10 +14,13 @@ const CheckoutPage = () => {
     change: 0,
     discountAmount: 0,
     date: new Date().toLocaleDateString(),
-    time: new Date().toLocaleTimeString()
+    time: new Date().toLocaleTimeString(),
+    paymentMethod: 'Cash'
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [referenceNumber, setReferenceNumber] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('Cash');
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -158,14 +161,28 @@ const CheckoutPage = () => {
 
               {/* Payment Details */}
               <div className="flex flex-col w-full flex-1">
-                <div className="w-full flex justify-between p-5">
+                <div className="w-full flex justify-between px-5">
                   <span className="text-darkerGray text-base sm:text-lg md:text-xl lg:text-2xl font-semibold">
                     Mode of Payment
                   </span>
                   <span className="text-darkerGray text-base sm:text-lg md:text-xl lg:text-2xl font-semibold">
-                    Cash
+                    {transaction.paymentMethod}
                   </span>
                 </div>
+
+                {transaction.paymentMethod === 'Digital Wallet' && (
+                  <div className="w-full flex justify-between px-5 mt-2">
+                    <span className="text-darkerGray text-base sm:text-lg md:text-xl lg:text-2xl font-semibold">
+                      Reference Number
+                    </span>
+                    <input
+                      type="text"
+                      className="text-darkerGray text-base sm:text-lg md:text-xl lg:text-2xl font-semibold"
+                      value={referenceNumber}
+                      onChange={(e) => setReferenceNumber(e.target.value)}
+                    />
+                  </div>
+                )}
 
                 <div className="w-full flex justify-between px-5">
                   <span className="text-darkerGray text-base sm:text-lg md:text-xl lg:text-2xl font-semibold">

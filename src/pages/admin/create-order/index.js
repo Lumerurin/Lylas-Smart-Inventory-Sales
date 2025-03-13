@@ -25,6 +25,7 @@ const CreateOrder = () => {
   const [username, setUsername] = useState("");
   const [cartItems, setCartItems] = useState([]);
   const [paymentMethod, setPaymentMethod] = useState('Cash');
+  const [referenceNumber, setReferenceNumber] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [products, setProducts] = useState([]); // State to store products
   const navigate = useNavigate();
@@ -127,7 +128,9 @@ const CreateOrder = () => {
           ProductID: item.ProductID,
           quantity: item.quantity,
           Price: item.Price
-        }))
+        })),
+        PaymentMethodID: paymentMethod === 'Cash' ? 1 : 2, // Assuming 1 is Cash and 2 is Digital Wallet
+        ReferenceNumber: paymentMethod === 'Cash' ? null : referenceNumber
       };
 
       // Log the transaction data
@@ -145,7 +148,8 @@ const CreateOrder = () => {
           cashReceived: amountPaidValue,
           transactionID,
           employeeID,
-          discountAmount
+          discountAmount,
+          paymentMethod
         }
       });
     } catch (error) {
@@ -357,6 +361,17 @@ const CreateOrder = () => {
                   <option>Digital Wallet</option>
                 </select>
               </div>
+
+              {paymentMethod === 'Digital Wallet' && (
+                <div className="flex w-full justify-between px-2 py-2 items-center">
+                  <label className="font-semibold">Reference Number</label>
+                  <input
+                    className="w-[10rem] text-left pl-3 text-black placeholder:text-darkerGray"
+                    value={referenceNumber}
+                    onChange={(e) => setReferenceNumber(e.target.value)}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Checkout Button Aligned to Bottom */}

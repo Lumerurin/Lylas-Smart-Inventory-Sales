@@ -244,7 +244,7 @@ app.get('/api/stockout', async (req, res) => {
 app.post('/api/transactions', async (req, res) => {
   const connection = await pool.getConnection();
   try {
-    const { EmployeeID, ScheduleID, TotalCost, DiscountedPrice, TransactionDate, CashPayment, items } = req.body;
+    const { EmployeeID, ScheduleID, TotalCost, DiscountedPrice, TransactionDate, CashPayment, items, PaymentMethodID, ReferenceNumber } = req.body;
     
     // Log the received data
     console.log('Received transaction data:', req.body);
@@ -285,6 +285,13 @@ app.post('/api/transactions', async (req, res) => {
       const updateStockQuery = `UPDATE stockin SET Quantity = Quantity - ? WHERE StockID = ?`;
       await connection.execute(updateStockQuery, [quantity, stockID]);
     }
+
+    // Save payment method
+    const paymentMethodQuery = `
+      INSERT INTO paymentmethod (TransactionID, PaymentMethodID, ReferenceNumber)
+      VALUES (?, ?, ?)
+    `;
+    await connection.execute(paymentMethodQuery, [transactionID, PaymentMethodID, ReferenceNumber]);
 
     await connection.commit();
     res.status(201).json({ message: 'Transaction created successfully', TransactionID: transactionID });
