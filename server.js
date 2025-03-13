@@ -1120,6 +1120,26 @@ app.get('/api/all-employees', async (req, res) => {
   }
 });
 
+// Define a route to get event revenue
+app.get('/api/event-revenue', async (req, res) => {
+  const query = `
+    SELECT 
+      EventTitle,
+      ScheduleID,
+      SUM(TotalRevenue) AS TotalRevenue
+    FROM event_revenue
+    GROUP BY EventTitle, ScheduleID
+  `;
+
+  try {
+    const results = await executeQuery(query);
+    res.status(200).json(results);
+  } catch (err) {
+    console.error('Error fetching event revenue:', err);
+    res.status(500).json({ error: 'Database error', details: err.message });
+  }
+});
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
