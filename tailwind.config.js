@@ -22,10 +22,14 @@ export default {
         blueSerenity: "#4E76CD",
         blueTranquil: "#8EDEFF",
         blueDark: "#101540",
+        blueJade: "#5176CA",
 
         goldenYellow: "#FFDA6A",
 
         greenLight: "#B1E9BA",
+      },
+      backgroundImage: {
+        cookieBG: "url('/src/img/cookie_BG.png')", // Update with the correct path
       },
     },
   },

@@ -12,7 +12,7 @@ const Layout = ({ children }) => {
       <Sidebar />
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-y-hidden">
-        <main className="px-4 sm:px-6 md:px-10 py-6 sm:py-10 bg-white flex-1 scroll-smooth overflow-y-scroll">
+      <main className=" bg-white flex-1 scroll-smooth overflow-y-scroll">
           {children}
         </main>
       </div>

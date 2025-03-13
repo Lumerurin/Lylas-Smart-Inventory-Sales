@@ -79,3 +79,26 @@ label {
   color: #4c4c4c;
   font-weight: bold;
 }
+
+section {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  section {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  section {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}

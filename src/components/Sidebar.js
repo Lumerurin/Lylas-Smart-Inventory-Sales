@@ -71,7 +71,7 @@ const Sidebar = () => {
       // },
       about: {
         text: "About",
-        redirect: "",
+        redirect: "/admin/about",
         icon: <Info size={25} weight="light" />,
       },
       logout: {
@@ -139,7 +139,14 @@ const Sidebar = () => {
               {Object.entries(sidebarContent.controls).map(([key, value]) => (
                 <div
                   key={key}
-                  onClick={key === "logout" ? value.action : undefined}
+                  onClick={() => {
+                    if (key === "logout") {
+                      value.action();
+                    } else {
+                      setSelectedItem(key);
+                      navigate(value.redirect);
+                    }
+                  }}
                   className="flex items-center gap-4 rounded-lg px-4 py-2 text-slate-700 transition-colors duration-300 hover:cursor-pointer hover:bg-arcLight"
                 >
                   {value.icon}
