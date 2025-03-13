@@ -7,7 +7,9 @@ const SalesOrder = () => {
   useEffect(() => {
     const fetchEventRevenue = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/event-revenue`);
+        const response = await axios.get(
+          `http://localhost:5000/api/event-revenue`
+        );
         setEvents(response.data);
       } catch (error) {
         console.error("Error fetching event revenue:", error);
@@ -18,7 +20,7 @@ const SalesOrder = () => {
   }, []);
 
   return (
-    <section className="p-5 bg-solidWhite rounded-lg shadow-lg flex flex-col h-fit">
+    <section className="p-5 bg-solidWhite rounded-lg shadow-lg flex flex-col h-full">
       <div className="w-full flex justify-between items-center">
         <h2>Event Revenue</h2>
       </div>
@@ -37,9 +39,15 @@ const SalesOrder = () => {
             <tbody>
               {events.map((event, i) => (
                 <tr key={i} className="hover:bg-gray-50 border-b">
-                  <td className="px-2 md:px-4 py-2 text-xs md:text-sm">{event.EventTitle}</td>
-                  <td className="px-2 md:px-4 py-2 text-xs md:text-sm">{event.ScheduleID}</td>
-                  <td className="px-2 md:px-4 py-2 text-xs md:text-sm">${Number(event.TotalRevenue).toFixed(2)}</td>
+                  <td className="px-2 md:px-4 py-2 text-xs md:text-sm">
+                    {event.EventTitle}
+                  </td>
+                  <td className="px-2 md:px-4 py-2 text-xs md:text-sm">
+                    {event.ScheduleID}
+                  </td>
+                  <td className="px-2 md:px-4 py-2 text-xs md:text-sm">
+                    ${Number(event.TotalRevenue).toFixed(2)}
+                  </td>
                 </tr>
               ))}
             </tbody>
