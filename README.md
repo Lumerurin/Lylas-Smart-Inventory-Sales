@@ -48,13 +48,13 @@ Welcome to **Lyla's Smart Inventory and Transaction System**! This web-based app
 
 **On another terminal (Ctrl+Shift+`)**
 4. **Run the Backend**:
-   - **Start the Node.js server with:**:
+   - **Start the Node.js server with:**
    ```bash
     node server.js
 
 **The backend will be available at http://localhost:5000.**
 
-## **Debugging**
+### **Debugging**
 If you encounter errors or bugs, follow these steps to troubleshoot:
 
 1. **Read Error Messages Carefully**: Check the terminal or browser console for error prompts. They often indicate missing dependencies or incorrect configurations.
