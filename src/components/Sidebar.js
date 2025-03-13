@@ -64,11 +64,6 @@ const Sidebar = () => {
       },
     },
     controls: {
-      // settings: {
-      //   text: "Settings",
-      //   redirect: "",
-      //   icon: <Gear size={25} weight="light" />,
-      // },
       about: {
         text: "About",
         redirect: "/admin/about",
@@ -92,13 +87,13 @@ const Sidebar = () => {
       >
         {isOpen ? <X size={24} /> : <List size={24} />}
       </button>
-      <section
+      <div
         className={`bg-solidWhite py-10 flex flex-col w-[15.125rem] transition-all duration-500 ease-in-out  shadow-lg
       fixed top-0 left-0 z-40 h-screen max-h-screen overflow-hidden transform
       ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"} 
       md:relative md:translate-x-0 md:opacity-100 md:w-[15.125rem] md:h-screen`}
       >
-        <div className="flex flex-col justify-between">
+        <div className="flex flex-col h-full justify-between">
           {/* Top Part */}
           <div className="flex flex-col">
             <img src={logo} alt="logo" />
@@ -141,10 +136,9 @@ const Sidebar = () => {
                   key={key}
                   onClick={() => {
                     if (key === "logout") {
-                      value.action();
-                    } else {
-                      setSelectedItem(key);
-                      navigate(value.redirect);
+                      value.action(); // Call logout action
+                    } else if (value.redirect) {
+                      navigate(value.redirect); // Navigate to redirect path
                     }
                   }}
                   className="flex items-center gap-4 rounded-lg px-4 py-2 text-slate-700 transition-colors duration-300 hover:cursor-pointer hover:bg-arcLight"
@@ -164,7 +158,7 @@ const Sidebar = () => {
             </div>
           </div>
         </div>
-      </section>
+      </div>
     </>
   );
 };
