@@ -2,6 +2,9 @@
 
 Welcome to **Lyla's Smart Inventory and Transaction System**! This web-based application is designed to streamline sales transactions and inventory management for **Lyla’s Cakes, Pastries & Breads**, a bakery based in **Davao City**. By replacing manual record-keeping with a digital solution, the system enhances **efficiency, accuracy, and overall business operations**.  
 
+[**Lyla's Smart Inventory and Transaction System**](https://asdf-73lh5u5lp-jooobans-projects.vercel.app/login)
+
+
 ## **Technologies Used**  
 
 - **Frontend**  
