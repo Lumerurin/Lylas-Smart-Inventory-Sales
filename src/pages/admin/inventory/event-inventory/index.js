@@ -61,11 +61,12 @@ const EventInventoryPage = () => {
       })
       .catch(error => console.error('Error fetching stock-out data:', error));
   
-    fetch(eventDetailsUrl)
+      fetch(eventDetailsUrl)
       .then(response => response.json())
       .then(data => {
         console.log('Fetched event details:', data);
-        setEventDetails(data[0]); // Assuming you want the first event details
+        const recentEvent = data.sort((a, b) => new Date(b.ScheduleStartDate) - new Date(a.ScheduleStartDate))[0];
+        setEventDetails(recentEvent);
         setLoading(false);
       })
       .catch(error => {
