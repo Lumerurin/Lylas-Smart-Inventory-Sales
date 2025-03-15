@@ -19,6 +19,9 @@ Welcome to **Lyla's Smart Inventory and Transaction System**! This web-based app
 - **Database Management**  
   - **MySQL** (hosted on a cloud platform: **Railway**)  
 
+- **Deployment**  
+  - **Vercel**  
+
 ## **Features**  
 
 - **Dashboard** - Displays an overview of sales, revenues, inventory status, and best-selling products.  
